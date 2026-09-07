@@ -3,81 +3,66 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Community Flash-Flood Alert System — Group 2</title>
+<title>Community Issue Reporting System — Group 2</title>
 <style>
-  body{
-    margin:0 auto;max-width:680px;padding:48px 22px 72px;
-    font-family:Georgia,"Times New Roman",serif;color:#1b1b1b;background:#fbfaf7;
-    line-height:1.65;font-size:17px;
-  }
-  .kicker{
-    font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
-    font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6a6a6a;margin-bottom:14px;
-  }
+  body{margin:0 auto;max-width:680px;padding:48px 22px 72px;
+    font-family:Georgia,"Times New Roman",serif;color:#1b1b1b;background:#fbfaf7;line-height:1.65;font-size:17px;}
+  .kicker{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;letter-spacing:.08em;
+    text-transform:uppercase;color:#6a6a6a;margin-bottom:14px;}
   h1{font-size:30px;line-height:1.2;margin:0 0 8px;font-weight:700}
   .sub{font-size:18px;color:#3a3a3a;margin:0 0 4px}
   .stage{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:#8a6d3b}
   hr{border:0;border-top:1px solid #e2ded4;margin:30px 0}
   h2{font-size:19px;margin:30px 0 8px;font-weight:700}
   p{margin:0 0 14px}
-  ul,ol{margin:0 0 14px;padding-left:22px}
+  ul{margin:0 0 14px;padding-left:22px}
   li{margin-bottom:6px}
-  .built{color:#333}
-  .built code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;color:#1f6f7a}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;color:#1f6f7a}
   .team{list-style:none;padding:0}
-  .team li{margin-bottom:10px}
+  .team li{margin-bottom:8px}
   .team .n{font-weight:700}
   .team .r{color:#555}
   a{color:#1f6f7a}
   footer{margin-top:36px;font-size:14px;color:#777}
   footer a{font-weight:700}
-  .ref{font-size:14px;color:#777}
 </style>
 </head>
 <body>
-  <div class="kicker">Group 2 · Advanced Software Engineering</div>
-  <h1>Community Flash-Flood Alert System</h1>
-  <p class="sub">Early, area-specific flood warnings for residents along the Mekong in Kratie, Cambodia.</p>
-  <p class="stage">Course project — proposal stage (v1)</p>
+  <div class="kicker">Group 2 · Advanced Software Engineering (CSCI 841)</div>
+  <h1>Community Issue Reporting System</h1>
+  <p class="sub">A simple way for residents to report local problems and for the Office to resolve them — with everything tracked in one place.</p>
+  <p class="stage">Project home page · proposal and source code linked below</p>
 
   <hr>
 
-  <h2>The problem</h2>
-  <p>Kratie sits directly on the Mekong River and floods most rainy seasons. Today, warnings reach people
-  through television, Facebook, or commune loudspeakers — often too general, too slow, or missed at night.
-  Families are left with too little time to move to higher ground before the water arrives.</p>
+  <h2>What it does</h2>
+  <p>Residents report a local issue — a broken streetlight, a pothole, an overflowing drain, a burst water pipe — with a category, a location and an optional photo, and get a tracking reference. Office staff see every report in one list, triage it, and assign it to a field worker who moves it from <em>New</em> to <em>Resolved</em>. The resident is notified as the status changes, and a supervisor sees a dashboard of open issues, issues by category, and average resolution time.</p>
 
-  <h2>What we're building</h2>
-  <p>A simple web application backed by Telegram alerts. It monitors the Mekong's water level near Kratie,
-  shows the current flood risk, and warns subscribed residents early, with safety information and emergency
-  contacts. A commune officer can review the readings and confirm or send an alert.</p>
+  <h2>Who uses it</h2>
+  <ul>
+    <li><strong>Residents</strong> — report an issue and follow its progress without chasing anyone.</li>
+    <li><strong>Field staff</strong> — see assigned issues and update or resolve them.</li>
+    <li><strong>Supervisor / Admin</strong> — triage, assign, and monitor issues on a dashboard.</li>
+  </ul>
+  <p style="color:#777;font-size:15px">Client (course requirement — imaginary): the public-works office of a city / commune, referred to as <em>the Office</em>.</p>
 
-  <h2>How it works</h2>
-  <ol>
-    <li>Fetch river-discharge and rainfall data for Kratie several times a day (Open-Meteo, free).</li>
-    <li>Compare it to danger thresholds and mark the risk as Normal, Caution, or Danger.</li>
-    <li>Show the current risk, safety information, and contacts on the website.</li>
-    <li>When the risk becomes Danger, a Telegram bot alerts everyone subscribed for that area.</li>
-  </ol>
+  <h2>How it is built</h2>
+  <p>A web application in <code>PHP</code> with a <code>MySQL</code> database, runnable locally with XAMPP. The source code, database schema, and design diagrams live in the repository.</p>
 
-  <h2>Built with</h2>
-  <p class="built">A web app, the free <code>Open-Meteo</code> flood and rainfall data, a <code>Telegram</code>
-  bot, and a relational database — using only free and open data. Danger levels are modelled on the Mekong
-  River Commission's caution level for Kratie (22.0 m).</p>
-
-  <h2>The team</h2>
+  <h2>Team</h2>
   <ul class="team">
-    <li><span class="n">Pichponleur Pen</span> — <span class="r">database and shared data model</span></li>
-    <li><span class="n">Oudom Thach</span> — <span class="r">data intake, risk calculation, admin screen, integration</span></li>
-    <li><span class="n">Sethouday Prum</span> — <span class="r">resident web interface (Khmer &amp; English)</span></li>
-    <li><span class="n">Rolando Labrador</span> — <span class="r">Telegram alerts and testing</span></li>
+    <li><span class="n">Pichponleur Pen</span> — <span class="r">team leader · database &amp; dashboard</span></li>
+    <li><span class="n">Oudom Thach</span> — <span class="r">submit, triage &amp; assign, resolve</span></li>
+    <li><span class="n">Sethouday Prum</span> — <span class="r">tracking, accounts, user interface</span></li>
+    <li><span class="n">Rolando Labrador</span> — <span class="r">notifications &amp; testing</span></li>
   </ul>
 
   <hr>
-
   <footer>
-    Code: <a href="https://github.com/OudomThach2000/group-2-software-engineering">github.com/OudomThach2000/group-2-software-engineering</a><br>
-    Group 2 · Advanced Software Engineering · Fort Hays State University
+    <p>
+      <a href="https://github.com/OudomThach2000/group-2-software-engineering">Source code (GitHub)</a><br>
+      <a href="https://docs.google.com/document/d/1rLSzS4BTaCEJ3jATr-zUR9lfRH-AW2YI12V8GX5O3TU/edit">Project proposal (living document)</a>
+    </p>
   </footer>
 </body>
 </html>
