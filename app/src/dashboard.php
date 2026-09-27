@@ -34,3 +34,25 @@ function count_issues_by_status(PDO $pdo): array
     }
     return $counts;
 }
+
+/**
+ * Number of issues in each category, busiest first,
+ * e.g. [['category' => 'Streetlight', 'issue_count' => 1], ...].
+ * Categories with no issues yet are included with 0 (hence the LEFT JOIN).
+ */
+function count_issues_by_category(PDO $pdo): array
+{
+    $stmt = $pdo->prepare(
+        'SELECT c.name_en AS category, COUNT(i.id) AS issue_count
+           FROM categories c
+           LEFT JOIN issues i ON i.category_id = c.id
+          GROUP BY c.id, c.name_en, c.sort_order
+          ORDER BY issue_count DESC, c.sort_order'
+    );
+    $stmt->execute();
+
+    return array_map(
+        fn(array $row) => ['category' => $row['category'], 'issue_count' => (int) $row['issue_count']],
+        $stmt->fetchAll()
+    );
+}
