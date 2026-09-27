@@ -38,7 +38,8 @@ group-2-software-engineering/
 │   │   ├── header.php          # Shared page header / nav           (Sethouday)
 │   │   └── footer.php          # Shared page footer                 (Sethouday)
 │   ├── src/
-│   │   └── notify.php          # UC7 notification service           (Rolando)
+│   │   ├── notify.php          # UC7 notification service           (Rolando)
+│   │   └── dashboard.php       # UC5 dashboard queries              (Pichponleur)
 │   └── public/                 # <-- web root: point Apache/PHP here
 │       ├── index.php           # App home                           (Pichponleur)
 │       ├── submit.php          # UC1 Submit issue                   (Oudom)
@@ -54,7 +55,10 @@ group-2-software-engineering/
 │       ├── uploads/            # runtime photo uploads (gitignored)
 │       └── assets/
 │           ├── css/style.css   # Base styles                        (Sethouday)
+│           ├── css/dashboard.css # UC5 dashboard styles             (Pichponleur)
 │           └── js/app.js       # Front-end behaviour                (Sethouday)
+├── tests/
+│   └── dashboard_test.php      # UC5 query tests (run with php)     (Pichponleur)
 └── docs/
     ├── use-case-diagram.png
     └── system-sequence-uc1.png
@@ -88,6 +92,17 @@ group-2-software-engineering/
 5. Open the site (e.g. `http://localhost/`). Report and track pages work without an account; staff and
    supervisor pages require logging in. To make a supervisor: register an account, then
    `UPDATE users SET role='supervisor' WHERE email='you@example.com';`.
+
+## Tests
+
+Plain PHP scripts, no framework. Run them from the project root against a freshly imported
+`db/schema.sql` + `db/seed.sql` (they expect exactly the sample data):
+
+```
+php tests/dashboard_test.php      # UC5: status counts, category counts, average resolution time
+```
+
+Each check prints `PASS` or `FAIL`; the script exits with code 1 if any check fails.
 
 ## How we work together (contributions)
 
