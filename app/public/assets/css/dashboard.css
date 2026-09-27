@@ -1,0 +1,24 @@
+/* UC5 Supervisor dashboard styles.  Owner: Pichponleur Pen.  Uses the variables from style.css. */
+
+/* Summary tiles: one headline figure each */
+.stat-tiles { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:14px; margin:18px 0 30px; }
+.stat-tile { display:flex; flex-direction:column; gap:4px; padding:16px 18px; background:#fff;
+  border:1px solid var(--line); border-radius:10px; }
+.stat-tile-lead { border-top:3px solid var(--brand); }
+.stat-label { font-size:14px; color:var(--muted); }
+.stat-value { font-size:32px; font-weight:600; line-height:1.15; }
+.stat-note { font-size:13px; color:var(--muted); }
+
+/* Count tables with a thin bar showing each row's size relative to the largest */
+.dashboard-tables { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:28px; }
+.dashboard-tables h2 { font-size:18px; margin:0 0 8px; }
+.count-table { width:100%; border-collapse:collapse; font-size:15px; }
+.count-table th, .count-table td { padding:8px 6px; border-bottom:1px solid var(--line); text-align:left; }
+.count-table thead th { font-size:13px; font-weight:600; color:var(--muted); }
+.count-table tbody th { font-weight:400; }
+.count-table .num { width:4.5em; text-align:right; font-variant-numeric:tabular-nums; }
+.count-table .bar-cell { width:40%; }
+.bar { display:block; height:8px; background:var(--brand); border-radius:0 4px 4px 0; }
+
+/* Shown instead of the tables before any issue exists */
+.empty-state { padding:18px; border:1px dashed var(--line); border-radius:10px; background:#fff; color:var(--muted); }
