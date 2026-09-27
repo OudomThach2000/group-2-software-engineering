@@ -7,15 +7,16 @@
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../src/dashboard.php';
 require_role('supervisor');
-// TODO(Pichponleur): average resolution time.
 
 $error          = null;
 $statusCounts   = array_fill_keys(ISSUE_STATUSES, 0);
 $categoryCounts = [];
+$resolution     = ['average_hours' => null, 'resolved_count' => 0];
 try {
     $pdo            = db();
     $statusCounts   = count_issues_by_status($pdo);
     $categoryCounts = count_issues_by_category($pdo);
+    $resolution     = average_resolution_time($pdo);
 } catch (Throwable $e) {
     error_log('UC5 dashboard query failed: ' . $e->getMessage());
     $error = 'Could not load the dashboard figures — is the database set up? See README.';
@@ -25,6 +26,14 @@ $totalIssues      = array_sum($statusCounts);
 $openIssues       = array_sum(array_intersect_key($statusCounts, array_flip(OPEN_STATUSES)));
 $maxStatusCount   = max($statusCounts);                                      // longest bar, status table
 $maxCategoryCount = max(array_column($categoryCounts, 'issue_count') ?: [0]); // longest bar, category table
+
+// Note under the average, e.g. "About 1.6 days · 2 resolved issues"
+$resolvedCount  = $resolution['resolved_count'];
+$resolutionNote = $resolvedCount . ($resolvedCount === 1 ? ' resolved issue' : ' resolved issues');
+if ($resolution['average_hours'] !== null && $resolution['average_hours'] >= 24) {
+    $days           = round($resolution['average_hours'] / 24, 1);
+    $resolutionNote = sprintf('About %s %s · %s', $days, $days === 1.0 ? 'day' : 'days', $resolutionNote);
+}
 
 require_once __DIR__ . '/../../includes/header.php';
 ?>
@@ -44,6 +53,16 @@ require_once __DIR__ . '/../../includes/header.php';
       <span class="stat-label">Total reported</span>
       <span class="stat-value"><?= $totalIssues ?></span>
       <span class="stat-note">All statuses</span>
+    </div>
+    <div class="stat-tile">
+      <span class="stat-label">Average resolution time</span>
+      <?php if ($resolution['average_hours'] === null): ?>
+        <span class="stat-value">—</span>
+        <span class="stat-note">No resolved issues yet</span>
+      <?php else: ?>
+        <span class="stat-value"><?= number_format($resolution['average_hours'], 1) ?> h</span>
+        <span class="stat-note"><?= htmlspecialchars($resolutionNote) ?></span>
+      <?php endif; ?>
     </div>
   </section>
 
