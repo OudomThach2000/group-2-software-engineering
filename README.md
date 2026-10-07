@@ -66,6 +66,7 @@ group-2-software-engineering/
 │   ├── dashboard_test.php      # UC5 query tests (run with php)     (Pichponleur)
 │   ├── issues_test.php         # UC1/UC3/UC4 lifecycle test         (Oudom)
 │   ├── notify_test.php         # UC7 notification test              (Rolando)
+│   ├── auth_test.php           # UC6 login & registration test      (Sethouday)
 │   └── run_tests.php           # Runs every *_test.php, one result  (Rolando)
 └── docs/
     ├── use-case-diagram.png
@@ -111,11 +112,12 @@ Plain PHP scripts, no framework. Run them from the project root against a freshl
 php tests/dashboard_test.php      # UC5: status counts, category counts, average resolution time
 php tests/issues_test.php         # UC1/UC3/UC4: submit, triage, start, resolve, close, audit trail
 php tests/notify_test.php         # UC7: recipient, channel, wording, delivery, failures, retry
+php tests/auth_test.php           # UC6: registration rules, password hashing, login, role landing pages
 php tests/run_tests.php           # all of the above, each in its own process, one overall result
 ```
 
 Each check prints `PASS` or `FAIL`; the script exits with code 1 if any check fails.
-`issues_test.php` and `notify_test.php` run inside a transaction that is rolled back, so they leave the data unchanged.
+`issues_test.php`, `notify_test.php` and `auth_test.php` run inside a transaction that is rolled back, so they leave the data unchanged.
 
 ## Try the issue flow and notifications (UC1, UC3, UC4, UC7)
 
