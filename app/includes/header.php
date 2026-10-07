@@ -24,7 +24,7 @@
       <span class="who"><?= htmlspecialchars($u['name']) ?> (<?= htmlspecialchars($u['role']) ?>)</span>
       <a href="/logout.php">Log out</a>
     <?php else: ?>
-      <a href="/login.php">Staff log in</a>
+      <a href="/login.php">Log in</a>
     <?php endif; ?>
   </nav>
 </header>

@@ -106,6 +106,8 @@ Plain PHP scripts, no framework. Run them from the project root against a freshl
 ```
 php tests/dashboard_test.php      # UC5: status counts, category counts, average resolution time
 php tests/issues_test.php         # UC1/UC3/UC4: submit, triage, start, resolve, close, audit trail
+php tests/auth_test.php           # UC6: registration rules, password hashing, login, role landing pages
+php tests/run_tests.php           # runs every *_test.php above
 ```
 
 Each check prints `PASS` or `FAIL`; the script exits with code 1 if any check fails.
