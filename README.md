@@ -29,7 +29,9 @@ group-2-software-engineering/
 ├── .gitignore
 ├── db/
 │   ├── schema.sql              # MySQL schema — 6 tables            (Pichponleur)
-│   └── seed.sql                # Sample categories + issues
+│   ├── seed.sql                # Sample categories + issues
+│   └── migrations/
+│       └── 001_add_issue_priority.sql  # FR8 priority; already in schema.sql, only for older databases (Oudom)
 ├── app/
 │   ├── config.example.php      # Copy to app/config.php (gitignored) and set DB credentials
 │   ├── includes/
@@ -38,6 +40,7 @@ group-2-software-engineering/
 │   │   ├── header.php          # Shared page header / nav           (Sethouday)
 │   │   └── footer.php          # Shared page footer                 (Sethouday)
 │   ├── src/
+│   │   ├── issues.php          # UC1/UC3/UC4 lifecycle rules        (Oudom)
 │   │   ├── notify.php          # UC7 notification service           (Rolando)
 │   │   └── dashboard.php       # UC5 dashboard queries              (Pichponleur)
 │   └── public/                 # <-- web root: point Apache/PHP here
@@ -58,7 +61,8 @@ group-2-software-engineering/
 │           ├── css/dashboard.css # UC5 dashboard styles             (Pichponleur)
 │           └── js/app.js       # Front-end behaviour                (Sethouday)
 ├── tests/
-│   └── dashboard_test.php      # UC5 query tests (run with php)     (Pichponleur)
+│   ├── dashboard_test.php      # UC5 query tests (run with php)     (Pichponleur)
+│   └── issues_test.php         # UC1/UC3/UC4 lifecycle test         (Oudom)
 └── docs/
     ├── use-case-diagram.png
     └── system-sequence-uc1.png
@@ -68,10 +72,11 @@ group-2-software-engineering/
 
 | Use case | File | Owner |
 |---|---|---|
-| UC1 Submit issue        | `app/public/submit.php`               | Oudom |
+| UC1 Submit issue        | `app/public/submit.php` → `submit_issue()` in `app/src/issues.php`        | Oudom |
 | UC2 Track issue         | `app/public/track.php`                | Sethouday |
-| UC3 Triage & assign     | `app/public/supervisor/triage.php`    | Oudom |
-| UC4 Update / resolve    | `app/public/staff/issues.php`         | Oudom |
+| UC3 Triage & assign     | `app/public/supervisor/triage.php` → `assign_issue()`                     | Oudom |
+| UC4 Update / resolve    | `app/public/staff/issues.php` → `update_issue_status()`                   | Oudom |
+| Close a resolved issue  | `app/public/supervisor/triage.php` → `close_issue()`                      | Oudom |
 | UC5 Dashboard           | `app/public/supervisor/dashboard.php` | Pichponleur |
 | UC6 Register / log in   | `app/public/login.php`, `register.php`| Sethouday |
 | UC7 Notify resident     | `app/src/notify.php`                  | Rolando |
@@ -100,9 +105,11 @@ Plain PHP scripts, no framework. Run them from the project root against a freshl
 
 ```
 php tests/dashboard_test.php      # UC5: status counts, category counts, average resolution time
+php tests/issues_test.php         # UC1/UC3/UC4: submit, triage, start, resolve, close, audit trail
 ```
 
 Each check prints `PASS` or `FAIL`; the script exits with code 1 if any check fails.
+`issues_test.php` runs inside a transaction that is rolled back, so it leaves the data unchanged.
 
 ## How we work together (contributions)
 

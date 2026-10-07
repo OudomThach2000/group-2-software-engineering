@@ -7,8 +7,8 @@
  * lifecycle, New -> Assigned -> In-progress -> Resolved -> Closed, and trying the
  * moves that must be refused along the way.
  *
- * Run from the project root, after importing db/schema.sql, db/seed.sql and
- * db/migrations/001_add_issue_priority.sql:
+ * Run from the project root, after importing db/schema.sql and db/seed.sql
+ * (the priority column is part of the schema, so no migration is needed):
  *     php tests/issues_test.php
  * Everything that writes runs inside one transaction that is rolled back at the end,
  * so the database is left as it was. Exit code 0 = every check passed, 1 = at least one failed.
