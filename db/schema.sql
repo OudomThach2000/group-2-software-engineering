@@ -43,6 +43,7 @@ CREATE TABLE issues (
   latitude         DECIMAL(9,6) NULL,
   longitude        DECIMAL(9,6) NULL,
   photo_path       VARCHAR(255) NULL,              -- optional photo (FR1)
+  priority         ENUM('Low','Medium','High','Urgent') NULL,  -- set by the supervisor during triage (FR8)
   status           ENUM('New','Assigned','In-progress','Resolved','Closed') NOT NULL DEFAULT 'New',
   reporter_user_id INT          NULL,              -- NULL = anonymous submission
   reporter_contact VARCHAR(190) NULL,              -- optional email/phone for anonymous reporters
@@ -53,6 +54,7 @@ CREATE TABLE issues (
   CONSTRAINT fk_issue_reporter FOREIGN KEY (reporter_user_id) REFERENCES users(id) ON DELETE SET NULL,
   INDEX idx_issue_status   (status),
   INDEX idx_issue_category (category_id),
+  INDEX idx_issue_priority (priority),
   INDEX idx_issue_created  (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
