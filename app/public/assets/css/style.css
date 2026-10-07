@@ -1,20 +1,38 @@
-/* Community Issue Reporting System — base styles.  Owner: Sethouday Prum. */
+/* Community Issue Reporting System — base styles.  Owner: Sethouday Prum.
+   Single column from 320px wide, touch targets of at least 44x44px, and status is never
+   shown by colour alone (Section 8, platform standards). */
 :root { --ink:#1b1b1b; --muted:#6a6a6a; --brand:#1f6f7a; --line:#e2ded4; --bg:#fbfaf7; }
 * { box-sizing: border-box; }
-body { margin:0; font-family: system-ui, "Segoe UI", Roboto, sans-serif; color:var(--ink); background:var(--bg); line-height:1.55; }
-.site-header { display:flex; flex-wrap:wrap; gap:14px; align-items:center; justify-content:space-between;
-  padding:14px 20px; border-bottom:1px solid var(--line); background:#fff; }
-.site-header .brand { font-weight:700; color:var(--brand); text-decoration:none; }
-.site-header nav a { margin-left:14px; color:#333; text-decoration:none; font-size:15px; }
-.site-header .who { margin-left:14px; color:var(--muted); font-size:14px; }
-.container { max-width:760px; margin:0 auto; padding:28px 20px 64px; }
+body { margin:0; font-family: system-ui, "Segoe UI", Roboto, "Noto Sans Khmer", sans-serif; color:var(--ink); background:var(--bg); line-height:1.55; overflow-wrap:anywhere; }
+.site-header { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; justify-content:space-between;
+  padding:8px 16px; border-bottom:1px solid var(--line); background:#fff; }
+.site-header .brand { font-weight:700; color:var(--brand); text-decoration:none; display:inline-flex; align-items:center; min-height:44px; }
+.site-header nav { display:flex; flex-wrap:wrap; align-items:center; gap:0 14px; }
+.site-header nav a { display:inline-flex; align-items:center; min-height:44px; color:#333; text-decoration:none; font-size:15px; }
+.site-header .who { color:var(--muted); font-size:14px; }
+.container { max-width:760px; margin:0 auto; padding:28px 16px 64px; }
 h1 { font-size:26px; margin:0 0 12px; }
-.actions { display:flex; gap:12px; }
-.btn { display:inline-block; padding:10px 16px; background:var(--brand); color:#fff; border-radius:8px; text-decoration:none; }
+.actions { display:flex; flex-wrap:wrap; gap:12px; }
+.btn { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:10px 16px; background:var(--brand); color:#fff; border:0; border-radius:8px; text-decoration:none; font:inherit; cursor:pointer; }
 .btn-outline { background:transparent; color:var(--brand); border:1px solid var(--brand); }
 .form { display:flex; flex-direction:column; gap:14px; max-width:440px; margin-top:10px; }
-.form label { display:flex; flex-direction:column; gap:6px; font-size:14px; color:#333; }
-.form input, .form select, .form textarea { padding:9px 10px; border:1px solid #ccc; border-radius:7px; font:inherit; }
-.form button { align-self:flex-start; padding:10px 18px; background:var(--brand); color:#fff; border:0; border-radius:8px; cursor:pointer; }
+.form label { display:flex; flex-direction:column; gap:6px; font-size:16px; color:#333; }
+.form input, .form select, .form textarea { min-height:44px; padding:9px 10px; border:1px solid #ccc; border-radius:7px; font:inherit; width:100%; }
+.form button { align-self:flex-start; min-height:44px; min-width:44px; padding:10px 18px; background:var(--brand); color:#fff; border:0; border-radius:8px; font:inherit; cursor:pointer; }
+.form button:disabled { opacity:.65; cursor:default; }
 .ok { color:#1c6b3c; } .error { color:#a33; } .muted { color:var(--muted); }
-.site-footer { border-top:1px solid var(--line); padding:18px 20px; color:var(--muted); font-size:13px; text-align:center; }
+.form .error { font-size:14px; }
+.site-footer { border-top:1px solid var(--line); padding:18px 16px; color:var(--muted); font-size:13px; text-align:center; }
+
+/* UC2 tracking page: status label + icon, then the history in date order. */
+.status { display:inline-flex; align-items:center; gap:6px; padding:2px 10px; border:1px solid var(--line); border-radius:999px; background:#fff; font-size:14px; font-weight:600; white-space:nowrap; }
+.track-result .current .status { font-size:18px; padding:6px 14px; }
+.track-result { margin-top:24px; padding-top:8px; border-top:1px solid var(--line); }
+.timeline { list-style:none; margin:0; padding:0 0 0 18px; border-left:2px solid var(--line); }
+.timeline li { position:relative; margin:0 0 16px; }
+.timeline li::before { content:""; position:absolute; left:-25px; top:9px; width:10px; height:10px; border-radius:50%; background:var(--brand); }
+.timeline time { display:block; color:var(--muted); font-size:14px; }
+.timeline p { margin:4px 0 0; }
+.my-reports { list-style:none; margin:0; padding:0; }
+.my-reports li { display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; padding:6px 0; border-bottom:1px solid var(--line); }
+.my-reports a { display:inline-flex; align-items:center; min-height:44px; font-weight:600; }
