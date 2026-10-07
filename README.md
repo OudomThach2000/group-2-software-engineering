@@ -148,6 +148,28 @@ promises, set `upload_max_filesize = 5M` in `php.ini`.
 Clicking through the flow adds issues, so `dashboard_test.php` (which expects exactly the sample data) will fail
 until `db/schema.sql` and `db/seed.sql` are imported again.
 
+## Issue lifecycle (UC1, UC3, UC4, close)
+
+The state diagram below is the design `app/src/issues.php` enforces: one function per transition, each a
+conditional `UPDATE ... WHERE status = <expected>`, so a transition only succeeds while the issue is still in the
+status the caller expects (optimistic concurrency — Section 7.2). Every transition also appends one row to
+`status_history` in the same database transaction, which is the audit trail (FR9).
+
+```mermaid
+stateDiagram-v2
+    [*] --> New : submit_issue() — resident, no login required (UC1)
+    New --> Assigned : assign_issue() — supervisor sets category + priority (UC3, FR8)
+    Assigned --> InProgress : update_issue_status() — assigned worker only (UC4)
+    InProgress --> Resolved : update_issue_status() — assigned worker, note required
+    Resolved --> Closed : close_issue() — supervisor confirms the work (FR12)
+    InProgress : In-progress
+```
+
+Each arrow is one function and returns `false` instead of throwing when the issue has already moved on, so two
+staff acting on the same issue at once cannot overwrite each other; `tests/issues_test.php` checks both the happy
+path and every refused move (a second assignment, the wrong worker, skipping a step, resolving without a note,
+closing twice).
+
 ## How we work together (contributions)
 
 The professor tracks each member's contribution from **GitHub history**, so:
