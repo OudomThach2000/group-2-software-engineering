@@ -16,6 +16,8 @@ INSERT INTO issues (tracking_ref, category_id, description, location_text, statu
   ('CIR-2026-0003', 3, 'Drain overflowing after rain, water across the street.',              'Street 12',             'Resolved', '2026-09-10 07:00:00', '2026-09-12 13:30:00'),
   ('CIR-2026-0004', 4, 'Rubbish bins overflowing at the park entrance.',                      'Riverside park',        'Closed',   '2026-09-05 10:00:00', '2026-09-06 10:00:00');
 
--- Demo accounts: register through the app, then promote roles, e.g.:
---   UPDATE users SET role='supervisor' WHERE email='supervisor@example.com';
---   UPDATE users SET role='staff'      WHERE email='staff@example.com';
+-- Demo accounts for the live demo (UC6). Passwords are shared in the group chat, never here.
+-- More accounts can register through the app; a supervisor then promotes their role.
+INSERT INTO users (name, email, password_hash, role) VALUES
+  ('Demo Supervisor',  'supervisor@example.com', '$2y$10$lf1sFt4q8pWYAIULFbUSyOChpDto5NE1WXaG4wAOu0epXYCTKxGGe', 'supervisor'),
+  ('Demo Field Staff', 'staff@example.com',      '$2y$10$QGVGxbD9LDf.AkSc.O2JKehDF7DfRFMR.9RYRK1s1jkuhYL1ZwL0K', 'staff');
