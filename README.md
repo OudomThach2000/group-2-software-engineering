@@ -60,9 +60,13 @@ group-2-software-engineering/
 │           ├── css/style.css   # Base styles                        (Sethouday)
 │           ├── css/dashboard.css # UC5 dashboard styles             (Pichponleur)
 │           └── js/app.js       # Front-end behaviour                (Sethouday)
+├── scripts/
+│   └── send_notifications.php  # UC7 delivers queued notifications  (Rolando)
 ├── tests/
 │   ├── dashboard_test.php      # UC5 query tests (run with php)     (Pichponleur)
-│   └── issues_test.php         # UC1/UC3/UC4 lifecycle test         (Oudom)
+│   ├── issues_test.php         # UC1/UC3/UC4 lifecycle test         (Oudom)
+│   ├── notify_test.php         # UC7 notification test              (Rolando)
+│   └── run_tests.php           # Runs every *_test.php, one result  (Rolando)
 └── docs/
     ├── use-case-diagram.png
     └── system-sequence-uc1.png
@@ -106,10 +110,43 @@ Plain PHP scripts, no framework. Run them from the project root against a freshl
 ```
 php tests/dashboard_test.php      # UC5: status counts, category counts, average resolution time
 php tests/issues_test.php         # UC1/UC3/UC4: submit, triage, start, resolve, close, audit trail
+php tests/notify_test.php         # UC7: recipient, channel, wording, delivery, failures, retry
+php tests/run_tests.php           # all of the above, each in its own process, one overall result
 ```
 
 Each check prints `PASS` or `FAIL`; the script exits with code 1 if any check fails.
-`issues_test.php` runs inside a transaction that is rolled back, so it leaves the data unchanged.
+`issues_test.php` and `notify_test.php` run inside a transaction that is rolled back, so they leave the data unchanged.
+
+## Try the issue flow and notifications (UC1, UC3, UC4, UC7)
+
+The web root must be `app/public`, because every link in the pages starts with `/` (for example `/submit.php`).
+The quickest way to serve it, from the project root:
+
+```
+php -S localhost:8000 -t app/public
+```
+
+PHP needs the `pdo_mysql`, `mbstring` and `fileinfo` extensions. To accept photos up to the 5 MB the form
+promises, set `upload_max_filesize = 5M` in `php.ini`.
+
+1. **Submit (UC1):** open `http://localhost:8000/submit.php`, fill in the form and put an email address or phone
+   number in *Contact for updates*, otherwise no notification can be queued. Keep the tracking reference shown
+   (for example `CIR-2026-0005`).
+2. **Triage (UC3):** log in as `supervisor@example.com` (demo account from `db/seed.sql`), open *Triage*, choose a
+   category and a priority (Low, Medium, High, Urgent), assign the issue to *Demo Field Staff*.
+3. **Start and resolve (UC4):** log in as `staff@example.com`, open *My issues*, press *Start work*, then
+   *Mark as resolved* with a note (a note is required to resolve).
+4. **Close:** log in as the supervisor again and close the issue under *Resolved, waiting to be closed*.
+5. **Notifications (UC7):** each status change after submission (Assigned, In-progress, Resolved, Closed) queues one
+   row in the `notifications` table for a report that has a contact. Deliver them with:
+
+   ```
+   php scripts/send_notifications.php                  # Version 1 writes each message to app/logs/notifications.log
+   php scripts/send_notifications.php --retry-failed   # put failed messages back in the queue first
+   ```
+
+Clicking through the flow adds issues, so `dashboard_test.php` (which expects exactly the sample data) will fail
+until `db/schema.sql` and `db/seed.sql` are imported again.
 
 ## How we work together (contributions)
 
