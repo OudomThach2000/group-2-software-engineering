@@ -152,10 +152,47 @@ until `db/schema.sql` and `db/seed.sql` are imported again.
 
 ## Issue lifecycle (UC1, UC3, UC4, close)
 
-The state diagram below is the design `app/src/issues.php` enforces: one function per transition, each a
-conditional `UPDATE ... WHERE status = <expected>`, so a transition only succeeds while the issue is still in the
-status the caller expects (optimistic concurrency — Section 7.2). Every transition also appends one row to
-`status_history` in the same database transaction, which is the audit trail (FR9).
+`app/src/issues.php` is the single place the lifecycle rules live: one function per transition
+(`submit_issue()`, `assign_issue()`, `update_issue_status()`, `close_issue()`), each a conditional
+`UPDATE ... WHERE status = <expected>`. A transition only succeeds while the issue is still in the status the
+caller expects — optimistic concurrency, Section 7.2 — so when two staff act on the same issue at once, only
+the first write succeeds and the second gets `false` back instead of silently overwriting it. Every successful
+transition also appends one row to `status_history` in the same database transaction, which is the audit trail
+(FR9). `tests/issues_test.php` checks both the happy path and every refused move (a second assignment, the
+wrong worker, skipping a step, resolving without a note, closing twice).
+
+### Process flow
+
+Who does what, and what happens when a move is refused:
+
+```mermaid
+flowchart TD
+    A["Resident fills in category, description,\nlocation, optional photo"] --> B{"validate_submission()"}
+    B -- invalid --> A2["Form redisplayed with\na message per field"]
+    A2 --> A
+    B -- valid --> C["submit_issue()\nstatus = New, tracking ref returned"]
+
+    C --> D["Supervisor opens Triage"]
+    D --> E{"assign_issue()\nWHERE status = 'New'"}
+    E -- already handled --> D
+    E -- ok --> F["status = Assigned\npriority + worker set (UC3)"]
+
+    F --> G["Worker opens My issues"]
+    G --> H{"update_issue_status() -> In-progress\nmust be the assigned worker"}
+    H -- not this worker --> G
+    H -- ok --> I["status = In-progress"]
+
+    I --> J{"update_issue_status() -> Resolved\nnote required"}
+    J -- no note --> I
+    J -- ok --> K["status = Resolved"]
+
+    K --> L["Supervisor opens Triage"]
+    L --> M{"close_issue()\nWHERE status = 'Resolved'"}
+    M -- already closed --> L
+    M -- ok --> N["status = Closed"]
+```
+
+### Lifecycle states
 
 ```mermaid
 stateDiagram-v2
@@ -167,10 +204,32 @@ stateDiagram-v2
     InProgress : In-progress
 ```
 
-Each arrow is one function and returns `false` instead of throwing when the issue has already moved on, so two
-staff acting on the same issue at once cannot overwrite each other; `tests/issues_test.php` checks both the happy
-path and every refused move (a second assignment, the wrong worker, skipping a step, resolving without a note,
-closing twice).
+### Sequence — UC1 Submit Issue
+
+What actually happens inside one request, from the form post to the tracking reference:
+
+```mermaid
+sequenceDiagram
+    actor Resident
+    participant Page as submit.php
+    participant Logic as issues.php
+    participant DB as Database
+
+    Resident->>Page: POST category, description, location, photo?
+    Page->>Logic: validate_submission(input)
+    Logic-->>Page: [] (no field errors)
+    opt photo attached
+        Page->>Page: save_photo() — real MIME type via finfo, 5MB limit, random filename
+    end
+    Page->>Logic: submit_issue(input, photoPath, userId)
+    Logic->>DB: BEGIN
+    Logic->>DB: next_tracking_ref()
+    Logic->>DB: INSERT INTO issues (status = New)
+    Logic->>DB: INSERT INTO status_history (NULL -> New)
+    Logic->>DB: COMMIT
+    Logic-->>Page: tracking reference, e.g. CIR-2026-0005
+    Page-->>Resident: show tracking reference + copy/track buttons
+```
 
 ## How we work together (contributions)
 
