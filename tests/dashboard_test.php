@@ -58,6 +58,26 @@ check(
     $averageHours === null ? null : round($averageHours, 2)
 );
 check('counts 2 resolved issues in that average', 2, $resolution['resolved_count']);
+// 5. Open issues (FR6): New, Assigned and In-progress count as open; Resolved and Closed do not.
+check(
+    'counts New, Assigned and In-progress issues as open, but not Resolved or Closed',
+    3,
+    count_open_issues(['New' => 1, 'Assigned' => 1, 'In-progress' => 1, 'Resolved' => 1, 'Closed' => 1])
+);
+
+// 6. A Resolved issue with no resolved_at date (old or damaged data) is left out of the average.
+$pdo->beginTransaction();
+try {
+    $pdo->exec("UPDATE issues SET status = 'Resolved', resolved_at = NULL WHERE tracking_ref = 'CIR-2026-0001'");
+    $resolution = average_resolution_time($pdo);
+    check(
+        'leaves a Resolved issue without a resolved_at date out of the average and the count',
+        [39.25, 2],
+        [round($resolution['average_hours'], 2), $resolution['resolved_count']]
+    );
+} finally {
+    $pdo->rollBack();
+}
 
 // 4. No data yet: empty the issues table inside a transaction and roll it back
 //    afterwards, so the seed data is left exactly as it was.

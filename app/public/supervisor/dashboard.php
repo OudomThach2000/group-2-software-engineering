@@ -23,7 +23,7 @@ try {
 }
 
 $totalIssues      = array_sum($statusCounts);
-$openIssues       = array_sum(array_intersect_key($statusCounts, array_flip(OPEN_STATUSES)));
+$openIssues       = count_open_issues($statusCounts);
 $maxStatusCount   = max($statusCounts);                                      // longest bar, status table
 $maxCategoryCount = max(array_column($categoryCounts, 'issue_count') ?: [0]); // longest bar, category table
 

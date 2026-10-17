@@ -84,3 +84,10 @@ function average_resolution_time(PDO $pdo): array
         'resolved_count' => (int) $row['resolved_count'],
     ];
 }
+/**
+ * Number of open issues (FR6): issues that are New, Assigned or In-progress.
+ */
+function count_open_issues(array $statusCounts): int
+{
+    return array_sum(array_intersect_key($statusCounts, array_flip(OPEN_STATUSES)));
+}
