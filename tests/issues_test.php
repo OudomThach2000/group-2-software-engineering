@@ -10,8 +10,12 @@
  * Run from the project root, after importing db/schema.sql and db/seed.sql
  * (the priority column is part of the schema, so no migration is needed):
  *     php tests/issues_test.php
- * Everything that writes runs inside one transaction that is rolled back at the end,
- * so the database is left as it was. Exit code 0 = every check passed, 1 = at least one failed.
+ * Sections 2 to 7 run inside one transaction that is rolled back at the end. Section 8 tests
+ * the rollback itself, so it runs outside that transaction and deletes the issue it made.
+ * Either way the database is left as it was. Exit code 0 = every check passed, 1 = at least one failed.
+ *
+ * Section 7, section 8 and the exact boundary checks in section 1 were added by
+ * Pichponleur Pen on 23 October 2026 to complete the v5 test plan.
  */
 require_once __DIR__ . '/../app/includes/db.php';
 require_once __DIR__ . '/../app/src/issues.php';
@@ -63,6 +67,13 @@ function make_user(PDO $pdo, string $name, string $role): int
     return (int)$pdo->lastInsertId();
 }
 
+/** A valid email address of exactly $length characters (each domain label is at most 63 characters). */
+function email_of_length(int $length): string
+{
+    $domain = str_repeat('a', 63) . '.' . str_repeat('b', 63) . '.';
+    return 'r@' . $domain . str_repeat('c', $length - 2 - strlen($domain) - 4) . '.com';
+}
+
 $pdo = db();
 $categoryIds = array_map('intval', $pdo->query('SELECT id FROM categories ORDER BY sort_order')->fetchAll(PDO::FETCH_COLUMN));
 $validInput = [
@@ -88,6 +99,14 @@ check('rejects a description over 2000 characters', ['description'],
     array_keys(validate_submission(['description' => str_repeat('a', 2001)] + $validInput, $categoryIds)));
 check('rejects a location over 255 characters', ['location_text'],
     array_keys(validate_submission(['location_text' => str_repeat('a', 256)] + $validInput, $categoryIds)));
+check('accepts a description of exactly 2000 characters', [],
+    validate_submission(['description' => str_repeat('a', 2000)] + $validInput, $categoryIds));
+check('accepts a location of exactly 255 characters', [],
+    validate_submission(['location_text' => str_repeat('a', 255)] + $validInput, $categoryIds));
+check('accepts a contact of exactly 190 characters', [],
+    validate_submission(['reporter_contact' => email_of_length(190)] + $validInput, $categoryIds));
+check('rejects a contact of 191 characters as too long', 'The contact detail is too long.',
+    validate_submission(['reporter_contact' => email_of_length(191)] + $validInput, $categoryIds)['reporter_contact'] ?? null);
 check('the contact is optional (FR15)', [],
     validate_submission(['reporter_contact' => ''] + $validInput, $categoryIds));
 check('accepts a phone number as the contact', [],
@@ -165,8 +184,75 @@ try {
         [null, $supervisorId, $workerId, $workerId, $supervisorId],
         array_map(fn(array $row) => $row['changed_by_user_id'] === null ? null : (int)$row['changed_by_user_id'], $history)
     );
+
+    // 7. Every invalid move (state based testing): take a new issue through the lifecycle and,
+    //    in each state, try every action that the state must refuse. The issue must stay put.
+    $actions = [
+        'assign'  => fn(int $id) => assign_issue($pdo, $id, $workerId, $supervisorId, $categoryIds[0], 'Low'),
+        'start'   => fn(int $id) => update_issue_status($pdo, $id, $workerId, 'In-progress'),
+        'resolve' => fn(int $id) => update_issue_status($pdo, $id, $workerId, 'Resolved', 'Done'),
+        'close'   => fn(int $id) => close_issue($pdo, $id, $supervisorId),
+    ];
+    $validMove = ['New' => 'assign', 'Assigned' => 'start', 'In-progress' => 'resolve', 'Resolved' => 'close', 'Closed' => null];
+
+    $loopRef = submit_issue($pdo, $validInput, null, null);
+    $loopId  = (int)scalar($pdo, 'SELECT id FROM issues WHERE tracking_ref = ?', [$loopRef]);
+    $invalidMoves = 0;
+    foreach ($validMove as $state => $allowed) {
+        foreach ($actions as $name => $action) {
+            if ($name === $allowed) {
+                continue;
+            }
+            $invalidMoves++;
+            check("refuses $name on a $state issue, which stays $state", [false, $state],
+                [$action($loopId), scalar($pdo, 'SELECT status FROM issues WHERE id = ?', [$loopId])]);
+        }
+        if ($allowed !== null) {
+            check("$allowed moves the issue on from $state", true, $actions[$allowed]($loopId));
+        }
+    }
+    check('tried all 16 invalid moves', 16, $invalidMoves);
 } finally {
     $pdo->rollBack();
+}
+
+// 8. Rollback (NFR4). This part runs outside the test transaction, so submit_issue() and
+//    assign_issue() open and close their own transactions, as they do on the live pages.
+//    An assignment that fails half way must leave no half saved change. The issue made here
+//    is deleted at the end, so the sample data is left as it was.
+$rollbackId = 0;
+try {
+    $rollbackRef = submit_issue($pdo, $validInput, null, null);
+    $rollbackId  = (int)scalar($pdo, 'SELECT id FROM issues WHERE tracking_ref = ?', [$rollbackRef]);
+    check('outside a transaction, submit_issue() commits the new issue', 'New',
+        scalar($pdo, 'SELECT status FROM issues WHERE id = ?', [$rollbackId]));
+
+    $seedSupervisorId = (int)scalar($pdo, "SELECT id FROM users WHERE role = 'supervisor' ORDER BY id LIMIT 1");
+    $failed = false;
+    try {
+        // No user has id 999999, so saving the assignment breaks a foreign key
+        // after the issue row has already been changed to Assigned.
+        assign_issue($pdo, $rollbackId, 999999, $seedSupervisorId, $categoryIds[1], 'Urgent');
+    } catch (PDOException $ex) {
+        $failed = true;
+    }
+    check('an assignment that fails half way reports an error', true, $failed);
+    check('...and is rolled back: the issue is still New, with no priority and its old category',
+        ['New', null, $categoryIds[0]],
+        [scalar($pdo, 'SELECT status FROM issues WHERE id = ?', [$rollbackId]),
+         scalar($pdo, 'SELECT priority FROM issues WHERE id = ?', [$rollbackId]),
+         (int)scalar($pdo, 'SELECT category_id FROM issues WHERE id = ?', [$rollbackId])]);
+    check('...with no assignment and only the first history entry', [0, 1],
+        [(int)scalar($pdo, 'SELECT COUNT(*) FROM assignments WHERE issue_id = ?', [$rollbackId]),
+         (int)scalar($pdo, 'SELECT COUNT(*) FROM status_history WHERE issue_id = ?', [$rollbackId])]);
+    check('...and no transaction is left open', false, $pdo->inTransaction());
+} finally {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    if ($rollbackId > 0) {
+        $pdo->prepare('DELETE FROM issues WHERE id = ?')->execute([$rollbackId]);   // also removes its history
+    }
 }
 
 if ($failures > 0) {
