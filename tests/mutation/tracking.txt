@@ -1,0 +1,15 @@
+# file: app/src/tracking.php
+# test: tests/tracking_test.php
+T1|3 digit numbers accepted|s#\\d\{4,\}\$/#\\d{3,}\$/#
+T2|reference not changed to upper case|s/return strtoupper\(trim\(\$ref\)\);/return trim(\$ref);/
+T3|spaces around the reference not removed|s/strtoupper\(trim\(\$ref\)\)/strtoupper(\$ref)/
+T4|start anchor removed: extra text in front accepted|s#'/\^CIR#'/CIR#
+T5|end anchor removed: extra text at the end accepted|s#\{4,\}\$/'#{4,}/'#
+T6|unknown reference gives an empty result instead of null|s/return null;/return ['issue' => null, 'history' => []];/
+T7|history newest first|s/ORDER BY changed_at, id/ORDER BY changed_at DESC, id/
+T8|history in the order it was saved, not by date|s/ORDER BY changed_at, id/ORDER BY id/
+T9|no first step for a report without history rows|s/if \(!\$history\) \{/if (false) {/
+T10|reporter contact detail added to the result|s/i\.created_at, c\.name_en, c\.name_km/i.created_at, c.name_en, c.name_km, i.reporter_contact/
+T11|internal issue id left in the result|s/\n\s*unset\(\$issue\['id'\]\);[^\n]*//
+T12|own reports listed oldest first|s/ORDER BY i\.created_at DESC/ORDER BY i.created_at ASC/
+T13|anonymous reports shown in everyone's list|s/WHERE i\.reporter_user_id = \?/WHERE (i.reporter_user_id = ? OR i.reporter_user_id IS NULL)/

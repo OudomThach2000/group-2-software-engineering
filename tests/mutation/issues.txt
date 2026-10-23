@@ -1,0 +1,11 @@
+# file: app/src/issues.php
+# test: tests/issues_test.php
+I1|description of exactly 2000 characters refused|s/mb_strlen\(\$description\) > MAX_DESCRIPTION_LENGTH/mb_strlen(\$description) >= MAX_DESCRIPTION_LENGTH/
+I2|location of exactly 255 characters refused|s/mb_strlen\(\$location\) > MAX_LOCATION_LENGTH/mb_strlen(\$location) >= MAX_LOCATION_LENGTH/
+I3|contact of exactly 190 characters refused|s/mb_strlen\(\$contact\) > MAX_CONTACT_LENGTH/mb_strlen(\$contact) >= MAX_CONTACT_LENGTH/
+I4|contact limit 200 instead of 190|s/const MAX_CONTACT_LENGTH     = 190;/const MAX_CONTACT_LENGTH     = 200;/
+I5|any issue that is not Assigned can be assigned|s/WHERE id = \? AND status = 'New'"/WHERE id = ? AND status <> 'Assigned'"/
+I6|a worker can move a Resolved issue|s/WHERE id = \? AND status = \?\n/WHERE id = ? AND status IN (?, 'Resolved')\n/
+I7|a supervisor can close an issue that is not Resolved|s/WHERE id = \? AND status = 'Resolved'"/WHERE id = ? AND status <> 'Closed'"/
+I8|failed change not rolled back|s/\n\s*if \(\$ownTransaction && \$pdo->inTransaction\(\)\) \{\n\s*\$pdo->rollBack\(\);\n\s*\}//
+I9|no transaction: each statement saved on its own|s/\$ownTransaction = !\$pdo->inTransaction\(\);/\$ownTransaction = false;/

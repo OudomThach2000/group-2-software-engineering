@@ -1,0 +1,12 @@
+# file: app/includes/auth.php
+# test: tests/session_test.php
+S1|no new session id at login (session fixation)|s/\n\s*session_regenerate_id\(true\);//
+S2|cookie readable by scripts (HttpOnly off)|s/'httponly' => true/'httponly' => false/
+S3|cookie sent from other sites (SameSite None)|s/'samesite' => 'Lax'/'samesite' => 'None'/
+S4|strict mode off: planted session ids accepted|s/\n\s*ini_set\('session\.use_strict_mode', '1'\);[^\n]*//
+S5|idle timeout 60 minutes instead of 30|s/const SESSION_TIMEOUT_SECONDS = 30 \* 60;/const SESSION_TIMEOUT_SECONDS = 60 * 60;/
+S6|logout does not destroy the session|s/\n\s*session_destroy\(\);//
+S7|activity time not moved forward|s/\n\s*\$_SESSION\['last_activity'\] = time\(\);\n(\s*return \$_SESSION\['user'\];)/\n$1/
+S8|cookie never marked Secure, even on HTTPS|s/'secure'   => !empty\(\$_SERVER\['HTTPS'\]\) && \$_SERVER\['HTTPS'\] !== 'off'/'secure'   => false/
+S9|timeout comparison reversed|s/> SESSION_TIMEOUT_SECONDS/< SESSION_TIMEOUT_SECONDS/
+S10|wrong role saved in the session|s/'role' => \$user\['role'\]\];/'role' => 'resident'];/

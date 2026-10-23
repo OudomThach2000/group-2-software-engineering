@@ -1,0 +1,13 @@
+# file: app/src/dashboard.php
+# test: tests/dashboard_test.php
+M1|average uses MAX instead of AVG|s/AVG\(TIMESTAMPDIFF/MAX(TIMESTAMPDIFF/
+M2|average uses MIN instead of AVG|s/AVG\(TIMESTAMPDIFF/MIN(TIMESTAMPDIFF/
+M3|minutes divided by 3600 instead of 60|s/\) \/ 60 AS average_hours/) \/ 3600 AS average_hours/
+M4|TIMESTAMPDIFF in HOUR instead of MINUTE|s/TIMESTAMPDIFF\(MINUTE/TIMESTAMPDIFF(HOUR/
+M5|Closed issues left out of the average|s/':closed' => 'Closed'/':closed' => 'Resolved'/
+M6|resolved_at IS NOT NULL condition removed|s/\s*AND resolved_at IS NOT NULL//
+M7|LEFT JOIN replaced by INNER JOIN|s/LEFT JOIN issues/INNER JOIN issues/
+M8|categories sorted ASC instead of DESC|s/ORDER BY issue_count DESC/ORDER BY issue_count ASC/
+M9|statuses with no issues are not listed|s/\$counts = array_fill_keys\(ISSUE_STATUSES, 0\);/\$counts = [];/
+M10|In-progress not counted as an open issue|s/const OPEN_STATUSES = \['New', 'Assigned', 'In-progress'\];/const OPEN_STATUSES = ['New', 'Assigned'];/
+M11|no average returned as 0 instead of null|s/\$row\['average_hours'\] === null \? null : \(float\) \$row\['average_hours'\]/(float) \$row['average_hours']/

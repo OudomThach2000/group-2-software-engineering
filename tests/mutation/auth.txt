@@ -1,0 +1,13 @@
+# file: app/includes/auth.php
+# test: tests/auth_test.php
+A1|password of exactly 8 characters refused|s/mb_strlen\(\$password\) < MIN_PASSWORD_LENGTH/mb_strlen(\$password) <= MIN_PASSWORD_LENGTH/
+A2|minimum password length 6 instead of 8|s/const MIN_PASSWORD_LENGTH     = 8;/const MIN_PASSWORD_LENGTH     = 6;/
+A3|name of exactly 120 characters refused|s/mb_strlen\(\$name\) > MAX_NAME_LENGTH/mb_strlen(\$name) >= MAX_NAME_LENGTH/
+A4|name length counted in bytes, so Khmer names are cut short|s/mb_strlen\(\$name\)/strlen(\$name)/
+A5|email of exactly 190 characters refused|s/mb_strlen\(\$email\) > MAX_EMAIL_LENGTH/mb_strlen(\$email) >= MAX_EMAIL_LENGTH/
+A6|email not changed to lower case|s/return mb_strtolower\(trim\(\$email\)\);/return trim(\$email);/
+A7|wrong password accepted|s/if \(!password_verify\(\$password, \$row\['password_hash'\]\)\) \{\n\s*return null;\n\s*\}//
+A8|outdated hash never upgraded|s/if \(password_needs_rehash\(\$row\['password_hash'\], PASSWORD_DEFAULT\)\) \{/if (false) {/
+A9|login refused after the hash is upgraded (decision table rule 2)|s/(\$row\['id'\]\]\);\n)(\s*)\}/$1$2    return null;\n$2}/
+A10|field staff sent to the supervisor page|s/'staff'      => '\/staff\/issues\.php'/'staff'      => '\/supervisor\/triage.php'/
+A11|unknown roles sent to the tracking page instead of home|s/\?\? '\/index\.php'/?? '\/track.php'/
