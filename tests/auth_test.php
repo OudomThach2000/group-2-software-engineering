@@ -12,6 +12,9 @@
  * Everything runs inside one transaction that is rolled back at the end, so the
  * database is left as it was.
  * Exit code 0 = every check passed, 1 = at least one failed.
+ *
+ * The 8 character password check and the rule 2 login check were added by
+ * Pichponleur Pen on 23 October 2026.
  */
 require_once __DIR__ . '/../app/includes/auth.php';
 
@@ -58,6 +61,8 @@ check('a blank name is refused', ['name'], array_keys(validate_registration(['na
 check('an invalid email is refused', ['email'], array_keys(validate_registration(['email' => 'not-an-email'] + $valid)));
 check('a short password is refused', ['password'],
     array_keys(validate_registration(['password' => str_repeat('x', MIN_PASSWORD_LENGTH - 1)] + $valid)));
+check('a password of exactly 8 characters is accepted', [],
+    validate_registration(['password' => str_repeat('x', MIN_PASSWORD_LENGTH)] + $valid));
 check('an empty form gets a message for every field', ['name', 'email', 'password'],
     array_keys(validate_registration([])));
 
@@ -100,7 +105,8 @@ try {
     // 5. A hash made with older settings is upgraded at the next login.
     $pdo->prepare('UPDATE users SET password_hash = ? WHERE id = ?')
         ->execute([password_hash('correct horse', PASSWORD_BCRYPT, ['cost' => 4]), $userId]);
-    attempt_login($pdo, 'sokha@auth-test.example', 'correct horse');
+    check('an outdated hash still logs in (decision table rule 2)', $expected,
+        attempt_login($pdo, 'sokha@auth-test.example', 'correct horse'));
     $stmt = $pdo->prepare('SELECT password_hash FROM users WHERE id = ?');
     $stmt->execute([$userId]);
     $hash = $stmt->fetchColumn();
