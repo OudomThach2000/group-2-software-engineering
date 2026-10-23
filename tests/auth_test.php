@@ -13,8 +13,10 @@
  * database is left as it was.
  * Exit code 0 = every check passed, 1 = at least one failed.
  *
- * The 8 character password check and the rule 2 login check were added by
- * Pichponleur Pen on 23 October 2026.
+ * Added by Pichponleur Pen on 23 October 2026: the password and email length boundaries
+ * and the rule 2 login check. Mutation testing (tests/mutation/auth.txt) found the gaps
+ * they close: a lower password minimum and a refused 190 character email both went
+ * unnoticed before.
  */
 require_once __DIR__ . '/../app/includes/auth.php';
 
@@ -48,6 +50,13 @@ function check_rejected(string $description, callable $action): void
     echo "FAIL  $description\n      expected an InvalidArgumentException, none was thrown\n";
 }
 
+/** A valid email address of exactly $length characters (each domain label is at most 63 characters). */
+function email_of_length(int $length): string
+{
+    $domain = str_repeat('a', 63) . '.' . str_repeat('b', 63) . '.';
+    return 'r@' . $domain . str_repeat('c', $length - 2 - strlen($domain) - 4) . '.com';
+}
+
 $valid = ['name' => 'Sokha Chan', 'email' => 'sokha@auth-test.example', 'password' => 'correct horse'];
 
 // 1. Registration rules, no database needed.
@@ -59,10 +68,18 @@ check('a name that is too long is refused', ['name'],
     array_keys(validate_registration(['name' => str_repeat('ក', MAX_NAME_LENGTH + 1)] + $valid)));
 check('a blank name is refused', ['name'], array_keys(validate_registration(['name' => '   '] + $valid)));
 check('an invalid email is refused', ['email'], array_keys(validate_registration(['email' => 'not-an-email'] + $valid)));
+check('an email of exactly 190 characters is accepted', [],
+    validate_registration(['email' => email_of_length(190)] + $valid));
+check('an email of 191 characters is refused as too long', 'The email address is too long.',
+    validate_registration(['email' => email_of_length(191)] + $valid)['email'] ?? null);
 check('a short password is refused', ['password'],
     array_keys(validate_registration(['password' => str_repeat('x', MIN_PASSWORD_LENGTH - 1)] + $valid)));
+// The 8 and the 7 are written out rather than taken from MIN_PASSWORD_LENGTH, so a changed
+// constant is caught too.
 check('a password of exactly 8 characters is accepted', [],
-    validate_registration(['password' => str_repeat('x', MIN_PASSWORD_LENGTH)] + $valid));
+    validate_registration(['password' => str_repeat('x', 8)] + $valid));
+check('a password of 7 characters is refused', ['password'],
+    array_keys(validate_registration(['password' => str_repeat('x', 7)] + $valid)));
 check('an empty form gets a message for every field', ['name', 'email', 'password'],
     array_keys(validate_registration([])));
 
