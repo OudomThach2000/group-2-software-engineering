@@ -6,9 +6,13 @@
  *
  * Privacy (NFR3): only the status, the date and the note of each change are shown, never
  * the reporter's contact detail or the name of the staff member who made the change.
+ *
+ * The lookup itself is in app/src/tracking.php (moved there by Pichponleur Pen on
+ * 23 October 2026 so that tests/tracking_test.php can check it).
  */
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../src/notify.php';   // STATUS_MESSAGES: same wording as the notifications
+require_once __DIR__ . '/../src/tracking.php'; // the lookup (UC2)
 
 /**
  * How each status is shown (7.4.3). The sentence comes from STATUS_MESSAGES, so the page and
@@ -21,9 +25,6 @@ const STATUS_ICONS = [
     'Resolved'    => '✓',    // tick
     'Closed'      => '●',    // filled circle
 ];
-
-/** A tracking reference looks like CIR-2026-0001. */
-const TRACKING_REF_PATTERN = '/^CIR-\d{4}-\d{4,}$/';
 
 function e(?string $s): string
 {
@@ -44,7 +45,7 @@ function long_date(string $datetime, bool $withTime = false): string
     return date($withTime ? 'j F Y, H:i' : 'j F Y', strtotime($datetime));
 }
 
-$ref      = strtoupper(trim((string)($_GET['ref'] ?? '')));
+$ref      = normalise_tracking_ref((string)($_GET['ref'] ?? ''));
 $issue    = null;
 $history  = [];
 $notFound = false;
@@ -55,42 +56,19 @@ $user     = current_user();
 
 try {
     if ($ref !== '') {
-        if (!preg_match(TRACKING_REF_PATTERN, $ref)) {
+        if (!is_valid_tracking_ref($ref)) {
             $refError = 'A tracking reference looks like CIR-2026-0001.';
         } else {
-            $pdo  = db();
-            $stmt = $pdo->prepare(
-                'SELECT i.id, i.tracking_ref, i.status, i.created_at, c.name_en, c.name_km
-                   FROM issues i JOIN categories c ON c.id = i.category_id
-                  WHERE i.tracking_ref = ?'
-            );
-            $stmt->execute([$ref]);
-            $issue = $stmt->fetch() ?: null;
-            if ($issue) {
-                $stmt = $pdo->prepare(
-                    'SELECT new_status, note, changed_at FROM status_history
-                      WHERE issue_id = ? ORDER BY changed_at, id'
-                );
-                $stmt->execute([$issue['id']]);
-                $history = $stmt->fetchAll();
-                // Older reports may have no history rows; their first step is still known.
-                if (!$history) {
-                    $history = [['new_status' => 'New', 'note' => null, 'changed_at' => $issue['created_at']]];
-                }
+            $found = find_issue_by_reference(db(), $ref);
+            if ($found) {
+                ['issue' => $issue, 'history' => $history] = $found;
             } else {
                 $notFound = true;
             }
         }
     }
     if ($user) {
-        $stmt = db()->prepare(
-            'SELECT i.tracking_ref, i.status, i.created_at, c.name_en
-               FROM issues i JOIN categories c ON c.id = i.category_id
-              WHERE i.reporter_user_id = ?
-              ORDER BY i.created_at DESC'
-        );
-        $stmt->execute([$user['id']]);
-        $myIssues = $stmt->fetchAll();
+        $myIssues = find_issues_by_reporter(db(), (int)$user['id']);
     }
 } catch (PDOException $ex) {
     error_log('track.php: ' . $ex->getMessage());
