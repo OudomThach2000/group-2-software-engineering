@@ -5,6 +5,7 @@
  * The rules live in validate_registration() / register_user() in app/includes/auth.php.
  */
 require_once __DIR__ . '/../includes/auth.php';
+reject_forged_post();   // #11: a POST must carry this session's token
 
 if ($u = current_user()) {
     header('Location: ' . home_for_role($u['role']));
@@ -54,6 +55,7 @@ require_once __DIR__ . '/../includes/header.php';
 <p class="muted">An account lets you see all your reports in one place. You can report and track an issue without one.</p>
 <?php if ($error): ?><p class="error" role="alert"><?= htmlspecialchars($error) ?></p><?php endif; ?>
 <form method="post" class="form" data-submit-once>
+  <?= csrf_field() ?>
   <label>Name
     <input type="text" name="name" maxlength="<?= MAX_NAME_LENGTH ?>" autocomplete="name"
       value="<?= htmlspecialchars($input['name']) ?>" required>

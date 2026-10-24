@@ -22,7 +22,10 @@
         <a href="/staff/issues.php">My issues</a>
       <?php endif; ?>
       <span class="who"><?= htmlspecialchars($u['name']) ?> (<?= htmlspecialchars($u['role']) ?>)</span>
-      <a href="/logout.php">Log out</a>
+      <form method="post" action="/logout.php" class="nav-form">
+        <?= csrf_field() ?>
+        <button type="submit">Log out</button>
+      </form>
     <?php else: ?>
       <a href="/login.php">Log in</a>
     <?php endif; ?>

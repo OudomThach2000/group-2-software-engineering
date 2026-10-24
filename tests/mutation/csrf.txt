@@ -1,0 +1,10 @@
+# file: app/includes/auth.php
+# test: tests/csrf_test.php
+C1|any token accepted|s/return \$expected !== '' && is_string\(\$sent\) && hash_equals\(\$expected, \$sent\);/return true;/
+C2|a session without a token accepts an empty token|s/\$expected !== '' && //
+C3|a new token on every call|s/if \(empty\(\$_SESSION\['csrf_token'\]\)\) \{/if (true) {/
+C4|short token of 2 random bytes|s/random_bytes\(32\)/random_bytes(2)/
+C5|token not renewed at login|s/\n\s*unset\(\$_SESSION\['csrf_token'\]\);[^\n]*//
+C6|forged POST not stopped|s/    exit;\n\}\n\z/}\n/
+C7|GET requests stopped too|s/\(\$_SERVER\['REQUEST_METHOD'\] \?\? 'GET'\) !== 'POST' \|\| //
+C8|token field renamed, so the pages send the wrong name|s/const CSRF_FIELD = 'csrf_token';/const CSRF_FIELD = 'token';/

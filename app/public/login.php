@@ -5,6 +5,7 @@
  * their role (ROLE_HOME in app/includes/auth.php).
  */
 require_once __DIR__ . '/../includes/auth.php';
+reject_forged_post();   // #11: a POST must carry this session's token
 
 if ($u = current_user()) {
     header('Location: ' . home_for_role($u['role']));
@@ -36,6 +37,7 @@ require_once __DIR__ . '/../includes/header.php';
 <h1>Log in</h1>
 <?php if ($error): ?><p class="error" role="alert"><?= htmlspecialchars($error) ?></p><?php endif; ?>
 <form method="post" class="form" data-submit-once>
+  <?= csrf_field() ?>
   <label>Email <input type="email" name="email" maxlength="<?= MAX_EMAIL_LENGTH ?>" autocomplete="email"
     value="<?= htmlspecialchars($email) ?>" required></label>
   <label>Password <input type="password" name="password" autocomplete="current-password" required></label>

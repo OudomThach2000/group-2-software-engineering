@@ -9,6 +9,7 @@ require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../src/issues.php';
 require_once __DIR__ . '/../../src/notify.php';
 require_role('staff', 'supervisor');
+reject_forged_post();   // #11: a POST must carry this session's token
 
 function e(?string $s): string
 {
@@ -86,6 +87,7 @@ require_once __DIR__ . '/../../includes/header.php';
   </p>
   <?php if ($issue['instructions']): ?><p>Instructions: <?= e($issue['instructions']) ?></p><?php endif; ?>
   <form method="post" class="form" data-submit-once>
+    <?= csrf_field() ?>
     <input type="hidden" name="issue_id" value="<?= (int)$issue['id'] ?>">
     <input type="hidden" name="new_status" value="<?= e(WORKER_NEXT_STATUS[$issue['status']]) ?>">
     <?php if ($issue['status'] === 'In-progress'): ?>
