@@ -51,11 +51,15 @@ $errors = [];
 $input = ['category_id' => '', 'description' => '', 'location_text' => '', 'reporter_contact' => ''];
 
 $categories = [];
+$databaseDown = false;
 try {
     $categories = db()->query('SELECT id, name_en, name_km FROM categories ORDER BY sort_order')->fetchAll();
 } catch (Throwable $ex) {
+    // The details go to the error log only; residents get a short message and no form,
+    // because the form cannot be sent without the database (#9).
     error_log('submit.php categories: ' . $ex->getMessage());
-    $error = 'Database is not set up yet — see README (import db/schema.sql and db/seed.sql).';
+    $databaseDown = true;
+    $error = 'Sorry, we cannot take reports right now. Please try again later.';
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$error) {
@@ -105,7 +109,7 @@ require_once __DIR__ . '/../includes/header.php';
     <a class="btn" href="/track.php?ref=<?= e(urlencode($trackingRef)) ?>">Track this report</a>
   </p>
   <p><a href="/submit.php">Report another issue</a></p>
-<?php else: ?>
+<?php elseif (!$databaseDown): ?>
 <form method="post" enctype="multipart/form-data" class="form" data-submit-once>
   <label>Category *
     <select name="category_id" required>

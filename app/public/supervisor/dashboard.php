@@ -19,7 +19,7 @@ try {
     $resolution     = average_resolution_time($pdo);
 } catch (Throwable $e) {
     error_log('UC5 dashboard query failed: ' . $e->getMessage());
-    $error = 'Could not load the dashboard figures — is the database set up? See README.';
+    $error = 'Sorry, the dashboard figures cannot be loaded right now. Please try again later.';
 }
 
 $totalIssues      = array_sum($statusCounts);
