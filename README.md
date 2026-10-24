@@ -41,7 +41,7 @@ group-2-software-engineering/
 │   │   └── footer.php          # Shared page footer                 (Sethouday)
 │   ├── src/
 │   │   ├── issues.php          # UC1/UC3/UC4 lifecycle rules        (Oudom)
-│   │   ├── notify.php          # UC7 notification service           (Rolando)
+│   │   ├── notify.php          # UC7 notification service           (Oudom)
 │   │   └── dashboard.php       # UC5 dashboard queries              (Pichponleur)
 │   └── public/                 # <-- web root: point Apache/PHP here
 │       ├── index.php           # App home                           (Pichponleur)
@@ -61,13 +61,14 @@ group-2-software-engineering/
 │           ├── css/dashboard.css # UC5 dashboard styles             (Pichponleur)
 │           └── js/app.js       # Front-end behaviour                (Sethouday)
 ├── scripts/
-│   └── send_notifications.php  # UC7 delivers queued notifications  (Rolando)
+│   └── send_notifications.php  # UC7 delivers queued notifications  (Oudom)
 ├── tests/
 │   ├── dashboard_test.php      # UC5 query tests (run with php)     (Pichponleur)
 │   ├── issues_test.php         # UC1/UC3/UC4 lifecycle test         (Oudom)
-│   ├── notify_test.php         # UC7 notification test              (Rolando)
+│   ├── notify_test.php         # UC7 notification test              (Oudom)
+│   ├── notify_integration_test.php # UC7 issue lifecycle notification test (Rolando)
 │   ├── auth_test.php           # UC6 login & registration test      (Sethouday)
-│   └── run_tests.php           # Runs every *_test.php, one result  (Rolando)
+│   └── run_tests.php           # Runs every *_test.php, one result  (Oudom)
 └── docs/
     ├── use-case-diagram.png
     └── system-sequence-uc1.png
@@ -84,7 +85,7 @@ group-2-software-engineering/
 | Close a resolved issue  | `app/public/supervisor/triage.php` → `close_issue()`                      | Oudom |
 | UC5 Dashboard           | `app/public/supervisor/dashboard.php` | Pichponleur |
 | UC6 Register / log in   | `app/public/login.php`, `register.php`| Sethouday |
-| UC7 Notify resident     | `app/src/notify.php`                  | Rolando |
+| UC7 Notify resident     | `app/src/notify.php`, `scripts/send_notifications.php` | Oudom; integration test Rolando |
 
 ## Local setup (XAMPP)
 

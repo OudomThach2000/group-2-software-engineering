@@ -1,6 +1,6 @@
 <?php
 /**
- * Runs every test script in this folder  (Section 8.4, testing).  Owner: Rolando Labrador.
+ * Runs every test script in this folder  (Section 8.4, testing).  Owner: Oudom Thach.
  *
  * Each *_test.php runs in its own PHP process, so one script's helper functions or a
  * fatal error cannot affect another. Run from the project root:

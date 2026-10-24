@@ -1,6 +1,6 @@
 <?php
 /**
- * Delivers queued notifications  (FR5, UC7).  Owner: Rolando Labrador.
+ * Delivers queued notifications  (FR5, UC7).  Owner: Oudom Thach.
  *
  * Run from the project root, by hand or on a schedule (Windows Task Scheduler or cron):
  *     php scripts/send_notifications.php
