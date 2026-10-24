@@ -10,6 +10,9 @@ body { margin:0; font-family: system-ui, "Segoe UI", Roboto, "Noto Sans Khmer", 
 .site-header nav { display:flex; flex-wrap:wrap; align-items:center; gap:0 14px; }
 .site-header nav a { display:inline-flex; align-items:center; min-height:44px; color:#333; text-decoration:none; font-size:15px; }
 .site-header .who { color:var(--muted); font-size:14px; }
+/* Log out is a small form, so it needs a POST with the token (#11); it looks like the other links. */
+.site-header .nav-form { display:inline-flex; margin:0; }
+.site-header .nav-form button { display:inline-flex; align-items:center; min-height:44px; padding:0; border:0; background:none; color:#333; font:inherit; font-size:15px; cursor:pointer; }
 .container { max-width:760px; margin:0 auto; padding:28px 16px 64px; }
 h1 { font-size:26px; margin:0 0 12px; }
 .actions { display:flex; flex-wrap:wrap; gap:12px; }
