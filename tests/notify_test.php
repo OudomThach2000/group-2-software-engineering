@@ -1,6 +1,6 @@
 <?php
 /**
- * UC7 Notify Resident — unit test for the notification service  (FR5).  Owner: Rolando Labrador.
+ * UC7 Notify Resident — unit test for the notification service  (FR5).  Owner: Oudom Thach.
  *
  * Checks notify_status_change(), deliver_queued_notifications() and
  * requeue_failed_notifications() from app/src/notify.php: who receives a message,
