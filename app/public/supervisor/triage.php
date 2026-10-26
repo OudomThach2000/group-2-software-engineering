@@ -9,6 +9,7 @@ require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../src/issues.php';
 require_once __DIR__ . '/../../src/notify.php';
 require_role('supervisor');
+reject_forged_post();   // #11: a POST must carry this session's token
 
 function e(?string $s): string
 {
@@ -126,6 +127,7 @@ require_once __DIR__ . '/../../includes/header.php';
     <?php if ($issue['photo_path']): ?> &middot; <a href="/<?= e($issue['photo_path']) ?>">View photo</a><?php endif; ?>
   </p>
   <form method="post" class="form" data-submit-once>
+    <?= csrf_field() ?>
     <input type="hidden" name="action" value="assign">
     <input type="hidden" name="issue_id" value="<?= (int)$issue['id'] ?>">
     <label>Category
@@ -179,6 +181,7 @@ require_once __DIR__ . '/../../includes/header.php';
   <?php if ($issue['resolution_note']): ?><p>Resolution note: <?= e($issue['resolution_note']) ?></p><?php endif; ?>
   <form method="post" class="form" data-submit-once
         data-confirm="Close <?= e($issue['tracking_ref']) ?>? The resident will be told the report is complete.">
+    <?= csrf_field() ?>
     <input type="hidden" name="action" value="close">
     <input type="hidden" name="issue_id" value="<?= (int)$issue['id'] ?>">
     <label>Closing note (optional)

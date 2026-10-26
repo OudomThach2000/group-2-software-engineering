@@ -8,6 +8,8 @@
  *   attempt_login()   checks an email and password, returns the user or null
  *   login_user()      starts the session for a user who passed attempt_login()
  *   logout_user()     ends the session
+ *   csrf_field()      the hidden token that every POST form includes (#11)
+ *   reject_forged_post()  stops a POST without this session's token, before the page acts
  * Registration lives here too: validate_registration() and register_user().
  *
  * Pages depend only on these functions, never on how sessions or password hashes work.
@@ -18,6 +20,7 @@ require_once __DIR__ . '/db.php';
 
 /** Settings that may change, kept in one place (Section 8, parameterisation). */
 const SESSION_TIMEOUT_SECONDS = 30 * 60;   // log out after 30 minutes without activity
+const SESSION_FILE_SECONDS    = 8 * 60 * 60;   // keep a session's file (and its form token) this long
 const MIN_PASSWORD_LENGTH     = 8;
 const MAX_NAME_LENGTH         = 120;       // same as users.name
 const MAX_EMAIL_LENGTH        = 190;       // same as users.email
@@ -42,6 +45,10 @@ function start_session(): void
         return;
     }
     ini_set('session.use_strict_mode', '1');   // never accept a session id we did not create
+    // PHP deletes idle session files after 24 minutes by default, which threw away the form
+    // token of anyone slow to fill in a form (#11). Logged-in users still time out after
+    // SESSION_TIMEOUT_SECONDS, because current_user() checks last_activity itself.
+    ini_set('session.gc_maxlifetime', (string)SESSION_FILE_SECONDS);
     session_set_cookie_params([
         'lifetime' => 0,
         'path'     => '/',
@@ -176,6 +183,7 @@ function login_user(array $user): void
 {
     start_session();
     session_regenerate_id(true);
+    unset($_SESSION['csrf_token']);   // a token seen before logging in is not valid after it (#11)
     $_SESSION['user'] = ['id' => (int)$user['id'], 'name' => $user['name'], 'role' => $user['role']];
     $_SESSION['last_activity'] = time();
 }
@@ -198,4 +206,55 @@ function logout_user(): void
         ]);
     }
     session_destroy();
+}
+
+/*
+ * Anti forgery token (#11, NFR3). Every POST form carries the token of the visitor's
+ * session, and a page acts on a POST only when the token matches. Another website can make
+ * a user's browser send one of our forms, but it cannot read the token, so such a request
+ * is stopped. The session cookie is also SameSite=Lax; the token is the standard protection
+ * on top of it.
+ */
+const CSRF_FIELD = 'csrf_token';
+
+/** This session's token, made on first use: 64 hexadecimal characters. */
+function csrf_token(): string
+{
+    start_session();
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+/** The hidden input that every POST form includes. */
+function csrf_field(): string
+{
+    return '<input type="hidden" name="' . CSRF_FIELD . '" value="' . htmlspecialchars(csrf_token()) . '">';
+}
+
+/** True only when $sent is this session's token. A session without a token accepts nothing. */
+function csrf_token_is_valid(mixed $sent): bool
+{
+    start_session();
+    $expected = $_SESSION['csrf_token'] ?? '';
+    return $expected !== '' && is_string($sent) && hash_equals($expected, $sent);
+}
+
+/**
+ * Called at the top of every page that handles a POST. A POST without this session's token
+ * gets status 400 and a short message, and the page never acts on it. Other requests pass.
+ */
+function reject_forged_post(): void
+{
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST' || csrf_token_is_valid($_POST[CSRF_FIELD] ?? null)) {
+        return;
+    }
+    http_response_code(400);
+    require __DIR__ . '/header.php';
+    echo '<h1>Please try again</h1>'
+       . '<p class="error" role="alert">This form has expired or did not come from this site. '
+       . 'Please go back, reload the page and send the form again.</p>';
+    require __DIR__ . '/footer.php';
+    exit;
 }

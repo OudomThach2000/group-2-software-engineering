@@ -109,6 +109,7 @@ Plain PHP scripts, no framework. Run them from the project root against a freshl
 `db/schema.sql` + `db/seed.sql` (they expect exactly the sample data):
 
 ```
+php tests/csrf_test.php           # #11: anti forgery token on every POST form; log out needs a POST
 php tests/dashboard_test.php      # UC5: status counts, category counts, average resolution time
 php tests/issues_test.php         # UC1/UC3/UC4: submit, triage, start, resolve, close, audit trail
 php tests/notify_test.php         # UC7: recipient, channel, wording, delivery, failures, retry

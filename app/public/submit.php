@@ -7,6 +7,7 @@
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../src/issues.php';
+reject_forged_post();   // #11: a POST must carry this session's token
 
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;   // 5 MB
 const PHOTO_TYPES = [
@@ -107,6 +108,7 @@ require_once __DIR__ . '/../includes/header.php';
   <p><a href="/submit.php">Report another issue</a></p>
 <?php else: ?>
 <form method="post" enctype="multipart/form-data" class="form" data-submit-once>
+  <?= csrf_field() ?>
   <label>Category *
     <select name="category_id" required>
       <option value="">Choose a category</option>
