@@ -53,6 +53,8 @@ $user = ['id' => 7, 'name' => 'Test Worker', 'role' => 'staff'];
 
 // 1. The token.
 start_session();
+check('a session file, and so its token, is kept for 8 hours, not the 24 minute default', '28800',
+      ini_get('session.gc_maxlifetime'));
 $token = csrf_token();
 check('the token is 64 hexadecimal characters (32 random bytes)', 1, preg_match('/^[0-9a-f]{64}$/', $token));
 check('the same token is used for the whole session', $token, csrf_token());

@@ -8,3 +8,4 @@ C5|token not renewed at login|s/\n\s*unset\(\$_SESSION\['csrf_token'\]\);[^\n]*/
 C6|forged POST not stopped|s/    exit;\n\}\n\z/}\n/
 C7|GET requests stopped too|s/\(\$_SERVER\['REQUEST_METHOD'\] \?\? 'GET'\) !== 'POST' \|\| //
 C8|token field renamed, so the pages send the wrong name|s/const CSRF_FIELD = 'csrf_token';/const CSRF_FIELD = 'token';/
+C9|session file kept only the 24 minute default|s/\n\s*ini_set\('session.gc_maxlifetime', \(string\)SESSION_FILE_SECONDS\);//

@@ -20,6 +20,7 @@ require_once __DIR__ . '/db.php';
 
 /** Settings that may change, kept in one place (Section 8, parameterisation). */
 const SESSION_TIMEOUT_SECONDS = 30 * 60;   // log out after 30 minutes without activity
+const SESSION_FILE_SECONDS    = 8 * 60 * 60;   // keep a session's file (and its form token) this long
 const MIN_PASSWORD_LENGTH     = 8;
 const MAX_NAME_LENGTH         = 120;       // same as users.name
 const MAX_EMAIL_LENGTH        = 190;       // same as users.email
@@ -44,6 +45,10 @@ function start_session(): void
         return;
     }
     ini_set('session.use_strict_mode', '1');   // never accept a session id we did not create
+    // PHP deletes idle session files after 24 minutes by default, which threw away the form
+    // token of anyone slow to fill in a form (#11). Logged-in users still time out after
+    // SESSION_TIMEOUT_SECONDS, because current_user() checks last_activity itself.
+    ini_set('session.gc_maxlifetime', (string)SESSION_FILE_SECONDS);
     session_set_cookie_params([
         'lifetime' => 0,
         'path'     => '/',
