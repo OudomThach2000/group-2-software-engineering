@@ -1,6 +1,6 @@
 <?php
 /**
- * Notification service  (FR5, UC7).  Owner: Rolando Labrador.
+ * Notification service  (FR5, UC7).  Owner: Oudom Thach.
  *
  * notify_status_change() is called by the pages right after a status change has been
  * committed. It only queues a message in the notifications table. Delivery is done
