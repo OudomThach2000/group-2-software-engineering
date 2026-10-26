@@ -31,7 +31,7 @@ group-2-software-engineering/
 │   ├── schema.sql              # MySQL schema — 6 tables            (Pichponleur)
 │   ├── seed.sql                # Sample categories + issues
 │   └── migrations/
-│       └── 001_add_issue_priority.sql  # FR8 priority; already in schema.sql, only for older databases (Oudom)
+│       └── README.md           # How schema changes are added; 001 retired in v1.1 (#12)
 ├── app/
 │   ├── config.example.php      # Copy to app/config.php (gitignored) and set DB credentials
 │   ├── includes/
