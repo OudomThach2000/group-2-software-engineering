@@ -115,6 +115,7 @@ php tests/dashboard_test.php      # UC5: status counts, category counts, average
 php tests/issues_test.php         # UC1/UC3/UC4: submit, triage, start, resolve, close, audit trail
 php tests/notify_test.php         # UC7: recipient, channel, wording, delivery, failures, retry
 php tests/auth_test.php           # UC6: registration rules, password hashing, login, role landing pages
+php tests/error_messages_test.php # #9: no developer message on any page; short message when MySQL is down
 php tests/run_tests.php           # all of the above, each in its own process, one overall result
 ```
 

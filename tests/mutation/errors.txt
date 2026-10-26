@@ -1,0 +1,8 @@
+# file: app/includes/db.php
+# test: tests/error_messages_test.php
+E1|error details shown on the page|s/htmlspecialchars\(UNAVAILABLE_MESSAGE\)/htmlspecialchars(UNAVAILABLE_MESSAGE . ' ' . \$ex->getMessage())/
+E2|database error answered with status 200|s/\$ex instanceof PDOException \? 503 : 500/200/
+E3|every error answered with status 503|s/\? 503 : 500/? 503 : 503/
+E4|nothing written to the error log|s/\n\s*error_log\(sprintf[^\n]*//
+E5|file name shown on the page|s/htmlspecialchars\(UNAVAILABLE_MESSAGE\)/htmlspecialchars(UNAVAILABLE_MESSAGE . ' ' . basename(\$ex->getFile()))/
+E6|message points users to the README again|s/'Sorry, the system is not available right now\. Please try again later\.'/'Database error: see the README.'/
