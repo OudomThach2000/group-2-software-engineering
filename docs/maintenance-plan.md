@@ -50,11 +50,20 @@ For each release the lead lists the requests, agrees the content with the team (
 
 ## 6. Configuration management
 
-- `main` always passes all tests. Work happens on branches and reaches `main` through reviewed pull requests.
-- Each release is a Git tag (`Version.1`, `v1.1`, and so on). A tag is never moved.
-- Commit subjects start with the use case or area (`UC2:`, `Tests:`, `Docs:`, `Schema:`), and a corrective commit names its issue.
-- A schema change is a new file in `db/migrations` plus the same change in `schema.sql`, so old and new databases both keep working.
-- `app/config.php` is never committed.
+Section 11 of the proposal is the full SCM plan; this section keeps the rules the team uses every day.
+
+- **Roles.** SCM lead: Pichponleur (this plan, the register, the measures and the release tags). Change authority: Oudom, as repository owner (access, branch protection, merges and waivers). Status and release manager: Sethouday (status reports, release notes and GitHub releases). Configuration auditor: Rolando (the functional and physical audit of each release).
+- **Items.** Everything in the repository is under configuration control. `app/config.php` and uploaded photos are kept out of it (see `.gitignore`). Outside tools (XAMPP, PHP, MariaDB) are not stored; section 9 lists the versions we need.
+- **Baselines.** `main` is the developmental baseline. Each release is a Git tag (`Version.1`, `v1.1`, and so on), and a tag is never moved.
+- **Branches.** Work happens on branches named `fix/<issue>-short-name` or `change/<issue>-short-name` (section 4) and reaches `main` only through a pull request that another member approves. `main` always passes all tests.
+- **Authority.** A documentation change needs one reviewer, a code change needs the owner of the module, and a schema change needs every member.
+- **Requests.** Every request is an issue from a template. The register records its category, severity, decision, release, owner, hours and status, and any deviation or waiver.
+- **Commits.** Commit subjects start with the use case or area (`UC2:`, `Tests:`, `Docs:`, `Schema:`), and a corrective commit names its issue.
+- **Schema changes.** A schema change is a new file in `db/migrations` plus the same change in `schema.sql`, so old and new databases both keep working.
+- **Secrets.** `app/config.php` is never committed.
+- **Releases.** Before a tag, the auditor checks the release and records the audit in an issue. The lead then updates the register and the test log and pushes the tag, and the release manager publishes the GitHub release with its notes.
+- **Measures.** At each proposal version the lead reports how many changes reached `main` through a pull request, how many had an approving review, and the time from request to close.
+- **This plan** changes only through a pull request, like any other change.
 
 ## 7. Cost estimation
 

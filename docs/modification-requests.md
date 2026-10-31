@@ -10,5 +10,6 @@ The register of maintenance requests since Version 1 (Demo 1, 8 October 2026). T
 | 11 | Forms have no anti forgery token, and logout works with a plain link | Preventive | Medium | 23 Oct | Accepted | v1.1 | Pichponleur, Sethouday | 3 h | 1 h, plus Sethouday's fix a2aec04 | Closed (pull request #15) |
 | 12 | Retire `db/migrations/001_add_issue_priority.sql` | Perfective | Low | 23 Oct | Accepted once every member confirms a current database | v1.1 | Pichponleur | 0.5 h | 0.25 h | Closed (pull request #16) |
 | 13 | Correct the Owner headers of `notify.php`, `notify_test.php`, `run_tests.php` and `send_notifications.php` | Perfective | Low | 23 Oct | Accepted | v1.1 | Pichponleur | 0.5 h | 0.25 h | Closed (pull request #17) |
+| 18 | SCM roles, items, branches, releases and measures in section 6 of the plan | Perfective | Low | 31 Oct | Accepted | v1.2 | Pichponleur | 0.5 h | | Open |
 
 v1.1 was reviewed and merged on 26 October 2026 (main ebf634f) and is tagged `v1.1`.
