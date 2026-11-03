@@ -1,0 +1,54 @@
+// Change process of Group 2, as a UML activity diagram (Figure 12.1 of the proposal; docs/process.md).
+// Render: dot -Tpng -Gdpi=220 docs/change-process.dot -o docs/change-process.png
+digraph change_process {
+  graph [rankdir=TB, newrank=true, nodesep=0.3, ranksep=0.3, fontname="Arial", fontsize=13, labeljust=c, pad=0.2];
+  node  [fontname="Arial", fontsize=11, shape=box, style="rounded", margin="0.12,0.06"];
+  edge  [fontname="Arial", fontsize=10, arrowsize=0.7];
+
+  subgraph cluster_requester {
+    label="Requester"; style="rounded"; color="#555555"; penwidth=1; margin=14;
+    start [shape=circle, style=filled, fillcolor=black, label="", width=0.18, height=0.18, fixedsize=true];
+    open  [label="Open an issue from a template\n(Problem report or\nModification request)"];
+  }
+  subgraph cluster_lead {
+    label="Maintenance lead"; style="rounded"; color="#555555"; penwidth=1; margin=14;
+    triage  [label="Triage in the register:\ncategory, severity, decision"];
+    d_accept [shape=diamond, label="", width=0.32, height=0.32, fixedsize=true];
+    later   [label="Reroute to development\nor defer to a later release"];
+    end_later [shape=doublecircle, style=filled, fillcolor=black, label="", width=0.12, height=0.12, fixedsize=true];
+    register [label="Update the register\nand the test log"];
+    end_done [shape=doublecircle, style=filled, fillcolor=black, label="", width=0.12, height=0.12, fixedsize=true];
+  }
+  subgraph cluster_assignee {
+    label="Assignee"; style="rounded"; color="#555555"; penwidth=1; margin=14;
+    impact [label="Impact analysis\n(comment on the issue)"];
+    change [label="Branch fix/<n> or change/<n>;\nchange code, tests and documents"];
+    run    [label="Run the full suite\nand the mutation lists"];
+    d_pass [shape=diamond, label="", width=0.32, height=0.32, fixedsize=true];
+    pr     [label="Open a pull request\nfrom the template"];
+  }
+  subgraph cluster_reviewer {
+    label="Reviewer (another member)"; style="rounded"; color="#555555"; penwidth=1; margin=14;
+    review [label="Review the pull request\n(module owner for code,\nall members for schema)"];
+    d_ok   [shape=diamond, label="", width=0.32, height=0.32, fixedsize=true];
+    merge  [label="Merge into main"];
+  }
+
+  start -> open -> triage -> d_accept;
+  d_accept -> later  [xlabel="[rerouted or deferred]  "];
+  later -> end_later;
+  d_accept -> impact [label="  [accepted]"];
+  impact -> change -> run -> d_pass;
+  d_pass:e -> change:se [xlabel="  [a check fails or\n  a mutant survives]", constraint=false];
+  d_pass -> pr [label="  [all pass]"];
+  pr -> review -> d_ok;
+  d_ok:e -> change:e [xlabel="  [changes requested]", constraint=false];
+  d_ok -> merge [label="  [approved]"];
+  merge -> register -> end_done;
+
+  {rank=same; open; triage; }
+  {rank=same; d_accept; impact; }
+  {rank=same; later; change; }
+  {rank=same; pr; review; }
+  {rank=same; merge; register; }
+}
