@@ -1,0 +1,99 @@
+# Quality checks on every change (proposal Section 14, docs/quality-plan.md).  Owner: Pichponleur Pen.
+#
+# Runs on each pull request to main, on each push to main, and by hand from the Actions tab
+# (for example on a release tag before its audit). A clean Ubuntu machine with PHP 8.2 and
+# MariaDB 10.11 runs the same checks a member runs on XAMPP before opening a pull request
+# (docs/maintenance-plan.md, section 4), so the result does not depend on anyone's computer:
+#   1. app/config.php must not be in the repository (it holds local passwords)
+#   2. php -l on every PHP file (syntax)
+#   3. a fresh database from db/schema.sql and db/seed.sql, with the settings of app/config.example.php
+#   4. php tests/run_tests.php (every *_test.php)
+#   5. bash tests/mutation/mutate.sh tests/mutation/*.txt (every mutant must be killed)
+#   6. php tools/complexity.php (a report only, it never fails the run)
+# The run fails if any check fails, and GitHub shows the result on the pull request.
+
+name: Quality checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Syntax, tests and mutants
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash   # stops at the first failing command, also inside a pipe
+
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"   # the same settings as app/config.example.php
+          MARIADB_DATABASE: community_issues
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7
+
+      - name: Set up PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: pdo_mysql, mbstring
+          coverage: none
+
+      - name: Check that app/config.php is not in the repository
+        run: |
+          if git ls-files --error-unmatch app/config.php > /dev/null 2>&1; then
+            echo "app/config.php is in the repository. Remove it with git rm --cached (docs/maintenance-plan.md, section 6)."
+            exit 1
+          fi
+          echo "app/config.php is not in the repository."
+
+      - name: Check the syntax of every PHP file (php -l)
+        run: find app scripts tests tools -name '*.php' -print0 | sort -z | xargs -0 -n1 php -l
+
+      - name: Create a fresh database from db/schema.sql and db/seed.sql
+        run: |
+          cp app/config.example.php app/config.php
+          # The mariadb client inside the database container loads the files, reading them as
+          # utf8mb4 so that the Khmer category names in the sample data are stored correctly.
+          docker exec -i "${{ job.services.mariadb.id }}" mariadb --default-character-set=utf8mb4 -u root community_issues < db/schema.sql
+          docker exec -i "${{ job.services.mariadb.id }}" mariadb --default-character-set=utf8mb4 -u root community_issues < db/seed.sql
+
+      - name: Run every test script
+        run: php tests/run_tests.php | tee test-output.txt
+
+      - name: Run every mutation list (every mutant must be killed)
+        run: bash tests/mutation/mutate.sh tests/mutation/*.txt | tee mutation-output.txt
+
+      - name: Report the cyclomatic complexity of every function
+        run: >-
+          php tools/complexity.php app/src/*.php app/includes/*.php app/public/*.php
+          app/public/staff/*.php app/public/supervisor/*.php scripts/*.php | tee complexity-output.txt
+
+      - name: Write the results to the summary of the run
+        if: always()
+        run: |
+          {
+            echo "### Quality checks"
+            echo "- Tests: $(grep -c '^PASS' test-output.txt 2> /dev/null) checks passed, $(grep -c '^FAIL' test-output.txt 2> /dev/null) failed. $(tail -n 1 test-output.txt 2> /dev/null)"
+            echo "- Mutants: $(grep -h 'All lists' mutation-output.txt 2> /dev/null)"
+            echo "- Complexity: $(tail -n 1 complexity-output.txt 2> /dev/null)"
+          } >> "$GITHUB_STEP_SUMMARY"

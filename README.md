@@ -122,6 +122,11 @@ php tests/run_tests.php           # all of the above, each in its own process, o
 Each check prints `PASS` or `FAIL`; the script exits with code 1 if any check fails.
 `issues_test.php`, `notify_test.php` and `auth_test.php` run inside a transaction that is rolled back, so they leave the data unchanged.
 
+On GitHub, every pull request to `main` and every push to `main` runs the same checks on a clean machine with
+PHP 8.2 and MariaDB 10.11 (`.github/workflows/quality.yml`): `php -l` on every PHP file, every test script on a
+fresh `db/schema.sql` + `db/seed.sql`, and every mutation list in `tests/mutation`. The result shows on the pull
+request. Our quality goals, reviews, audits and measures are in `docs/quality-plan.md`.
+
 ## Try the issue flow and notifications (UC1, UC3, UC4, UC7)
 
 The web root must be `app/public`, because every link in the pages starts with `/` (for example `/submit.php`).
