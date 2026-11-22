@@ -12,5 +12,6 @@ The register of maintenance requests since Version 1 (Demo 1, 8 October 2026). T
 | 13 | Correct the Owner headers of `notify.php`, `notify_test.php`, `run_tests.php` and `send_notifications.php` | Perfective | Low | 23 Oct | Accepted | v1.1 | Pichponleur | 0.5 h | 0.25 h | Closed (pull request #17) |
 | 18 | SCM roles, items, branches, releases and measures in section 6 of the plan | Perfective | Low | 31 Oct | Accepted | v1.2 | Pichponleur | 0.5 h | 0.25 h | Closed (pull request #19) |
 | 21 | Process definitions, the change process diagram and the counting rules in `docs/process.md` | Perfective | Low | 3 Nov | Accepted | v1.2 | Pichponleur | 1 h | 0.5 h | Closed (pull request #22) |
+| 23 | Model inventory (`docs/models.md`), lifecycle and invariant checks (`tests/model_test.php`), and sample data that follows the lifecycle | Perfective | Low | 11 Nov | Accepted | v1.2 | Pichponleur | 1 h | 1 h | Closed (pull request #24) |
 
 v1.1 was reviewed and merged on 26 October 2026 (main ebf634f) and is tagged `v1.1`.
